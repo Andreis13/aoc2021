@@ -19,14 +19,18 @@ class Solution < BaseSolution
 
     def points_covered
       if vertical? || horizontal?
-        ([x1,x2].min..[x1,x2].max).to_a.product(([y1,y2].min..[y1,y2].max).to_a)
+        numbers_between(x1, x2).product(numbers_between(y1, y2))
       else
-        (x1 > x2 ? x1.downto(x2) : x1.upto(x2)).to_a.zip((y1 > y2 ? y1.downto(y2) : y1.upto(y2)).to_a)
+        numbers_between(x1, x2).zip(numbers_between(y1, y2))
       end
     end
 
     def inspect
       "(#{x1},#{y1} -> #{x2},#{y2})"
+    end
+
+    def numbers_between(n1, n2)
+      (n1 > n2 ? n1.downto(n2) : n1.upto(n2)).to_a
     end
   end
 
