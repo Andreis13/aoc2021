@@ -1,8 +1,9 @@
 class BaseSolution
-  attr_reader :input_lines
+  attr_reader :input_lines, :input_data
 
   def initialize(input_file_path)
-    @input_lines = File.read(input_file_path).lines
+    @input_data = File.read(input_file_path)
+    @input_lines = @input_data.lines
   end
 
   def part_one_output
