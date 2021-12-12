@@ -23,27 +23,65 @@ class Solution < BaseSolution
     end
   end
 
+  class Path
+    attr_reader :nodes
+
+    def initialize(nodes)
+      @nodes = nodes
+    end
+
+    def initialize_copy(obj)
+      super
+      @nodes = obj.nodes.dup
+    end
+
+    def last
+      nodes.last
+    end
+
+    def complete?
+      last == 'end'
+    end
+
+    def add(node)
+      @double_visit ||= visited_small?(node)
+
+      nodes << node
+      self
+    end
+
+    def visited_small?(node)
+      small?(node) && nodes.include?(node)
+    end
+
+    def double_visit?
+      !!@double_visit
+    end
+
+    def small?(node)
+      !node.match?(/[[:upper:]]/)
+    end
+  end
+
   def part_one_output
-    count_paths_except { |p, n| small?(n) && p.include?(n) }
+    count_paths_except { |p, n| p.visited_small?(n) }
   end
 
   def part_two_output
-    count_paths_except { |p, n| n == 'start' || small?(n) && p.include?(n) && path_has_double_visit?(p) }
+    count_paths_except { |p, n| n == 'start' || p.double_visit? && p.visited_small?(n) }
   end
 
   def count_paths_except(&block)
-    nodes = ['start']
-    paths = [['start']]
-
+    paths = [Path.new(['start'])]
     completed_paths = []
 
     loop do
-      new_complete_paths, paths = paths.group_by(&:last).map do |last, ps|
+      new_complete_paths, paths = paths.group_by(&:last).flat_map do |last, ps|
         connected_nodes = adjacent_map[last]
         ps.product(connected_nodes)
           .reject(&block)
-          .map { |p, n| p.dup << n }
-      end.flatten(1).partition { |p| p.last == 'end' }
+          .map { |p, n| p.dup.add(n) }
+      end.partition(&:complete?)
 
       completed_paths.concat(new_complete_paths)
 
@@ -51,14 +89,5 @@ class Solution < BaseSolution
     end
 
     completed_paths.size
-  end
-
-  def small?(node)
-    !node.match?(/[[:upper:]]/)
-  end
-
-  def path_has_double_visit?(p)
-    small_nodes = p.select { |n| small?(n) }
-    small_nodes.size != small_nodes.uniq.size
   end
 end
